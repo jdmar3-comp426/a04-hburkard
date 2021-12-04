@@ -9,7 +9,6 @@ var db = require("./database.js");
 var md5 = require("md5");
 
 // Make Express use its own built-in body parser
-var bodyParser = require("body-parser");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -29,26 +28,49 @@ app.get("/app/", (req, res, next) => {
 // Define other CRUD API endpoints using express.js and better-sqlite3
 // CREATE a new user (HTTP method POST) at endpoint /app/new/
 app.post("/app/new/", (req, res) => {
-	const create = db.prepare("INSERT INTO userinfo (user, pass) VALUES (?, ?)").run(req.body.user, md5(req.body.pass));
-	res.status(201).json({
-		"message": create.changes + " record created: ID " + create.lastInsertRowid + " (201)"
+	const create = db.prepare("INSERT INTO userinfo (user, pass) VALUES (?, ?)").run(req.body.user, m5(req.body.pass));
+	res.json({
+		"message": "1 record created: ID " + create.lastInsertRowid + " (201)"
 	});
+	res.status(201);
+	return
 });
 
 // READ a list of all users (HTTP method GET) at endpoint /app/users/
 app.get("/app/users", (req, res) => {	
 	const stmt = db.prepare("SELECT * FROM userinfo").all();
 	res.status(200).json(stmt);
+	return
 });
 
 // READ a single user (HTTP method GET) at endpoint /app/user/:id
+app.get("/app/user/:id", (req, res) => {	
+	const read1 = db.prepare("SELECT * FROM userinfo WHERE id = ?").get(req.params.id);
+	res.status(200).json(read1);
+	return
+});
 
 // UPDATE a single user (HTTP method PATCH) at endpoint /app/update/user/:id
+app.patch("/app/update/user/:id", (req, res) => {
+	const update1 = db.prepare("UPDATE userinfo SET user = COALESCE(?,user), pass = COALESCE(?,pass) WHERE id = ?");
+	const runner = update1.run(req.body.user, md5(req.body.pass), req.params.id)
+	res.status(200).json({
+		"message": "1 record updated: ID " + req.params.id + " (200)"
+	});
+	return
+});
 
 // DELETE a single user (HTTP method DELETE) at endpoint /app/delete/user/:id
+app.delete("/app/delete/user/:id", (req, res) => {
+	const delete1 = db.prepare("DELETE FROM userinfo WHERE id = ?").run(req.params.id);
+	res.status(200).json({
+		"message": "1 record deleted: ID " + req.params.id + " (200)"
+	});
+	return
+});
 
 // Default response for any other request
 app.use(function(req, res){
-	res.json({"message":"Endpoint not found. (404)"});
+	res.json({"message":"Your API is working!"});
     res.status(404);
 });
