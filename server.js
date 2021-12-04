@@ -30,7 +30,7 @@ app.get("/app/", (req, res, next) => {
 app.post("/app/new/", (req, res) => {
 	const create = db.prepare("INSERT INTO userinfo (user, pass) VALUES (?, ?)").run(req.body.user);
 	res.status(201).json({
-		"message": create.changes + "record created: ID" + create.lastInsertRowid + "(201)"
+		"message": create.changes + " record created: ID " + create.lastInsertRowid + "(201)"
 	});
 
 
